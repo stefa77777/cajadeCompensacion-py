@@ -1,22 +1,22 @@
+
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
+from collections import deque
 from datetime import date
-import calendar
-
-
-NEGRO = "#100D16"
-MORADO_OSCURO = "#1B1426"
-MORADO = "#7928CA"
-MORADO_CLARO = "#A855F7"
-BLANCO = "#F5F0FF"
-GRIS = "#C4B8D8"
-ROJO = "#D9365B"
+from tkcalendar import DateEntry
 
 
 class EstructuraDatosAfiliado:
     def __init__(
-        self, tipo_id, numero_id, nombre, ingresos,
-        servicio, modalidad, tarifa, fecha
+        self,
+        tipo_id,
+        numero_id,
+        nombre,
+        ingresos,
+        servicio,
+        modalidad,
+        tarifa,
+        fecha
     ):
         self.tipo_id = tipo_id
         self.numero_id = numero_id
@@ -39,417 +39,583 @@ class EstructuraDatosAfiliado:
             self.fecha
         )
 
+
 pila = []
-cola = []
+cola = deque()
 lista_afiliados = []
 
+
+FONDO = "#11111B"
+PANEL = "#1E1E2E"
+MORADO = "#8B5CF6"
+MORADO_CLARO = "#A78BFA"
+BLANCO = "#F8FAFC"
+GRIS = "#CBD5E1"
+VERDE = "#22C55E"
+ROJO = "#EF4444"
+
 ventana = tk.Tk()
-ventana.title("Compensándote - Inicio de sesión")
-ventana.geometry("460x420")
+ventana.title("Compensándote | Acceso")
+ventana.geometry("440x360")
+ventana.configure(bg=FONDO)
 ventana.resizable(False, False)
-ventana.configure(bg=NEGRO)
 
 
-def mostrar_about(parent):
-    about = tk.Toplevel(parent)
-    about.title("About")
-    about.geometry("390x280")
-    about.configure(bg=NEGRO)
-    about.resizable(False, False)
-
-    tk.Label(
-        about,
-        text="ACERCA DE COMPENSÁNDOTE",
-        font=("Arial", 14, "bold"),
-        bg=NEGRO,
-        fg=MORADO_CLARO
-    ).pack(pady=15)
-
-    datos = [
-        "Course: Data Structures — 301305",
-        "Student: Andrea Redondo",
-        "Collaborative Group: 301305A_2204",
-        "UNAD · ECBTI · Systems Engineering",
-        "October 2026"
-    ]
-
-    for dato in datos:
-        tk.Label(
-            about,
-            text=dato,
-            font=("Arial", 9),
-            bg=NEGRO,
-            fg=BLANCO,
-            wraplength=360
-        ).pack(pady=5)
-
-    tk.Button(
-        about,
-        text="Aceptar",
-        command=about.destroy,
-        bg=MORADO,
-        fg=BLANCO,
-        activebackground=MORADO_CLARO,
-        relief="flat"
-    ).pack(pady=10)
-
-def abrir_menu():
-    ventana.withdraw()
-
-    menu = tk.Toplevel(ventana)
-    menu.title("Caja Compensándote - Control de Afiliados")
-    menu.geometry("1200x760")
-    menu.minsize(1000, 650)
-    menu.configure(bg=NEGRO)
-
-    menu.protocol("WM_DELETE_WINDOW", ventana.destroy)
-
-    estilo = ttk.Style(menu)
+def configurar_estilos():
+    estilo = ttk.Style()
     estilo.theme_use("clam")
 
     estilo.configure(
-        "TCombobox",
-        fieldbackground=MORADO_OSCURO,
-        background=MORADO,
-        foreground=BLANCO,
-        arrowcolor=BLANCO
-    )
-
-    estilo.configure(
         "Treeview",
-        background=MORADO_OSCURO,
+        background=PANEL,
         foreground=BLANCO,
-        fieldbackground=MORADO_OSCURO,
-        rowheight=28,
-        font=("Arial", 9)
+        fieldbackground=PANEL,
+        rowheight=30,
+        borderwidth=0,
+        font=("Segoe UI", 9)
     )
 
     estilo.configure(
         "Treeview.Heading",
         background=MORADO,
-        foreground=BLANCO,
-        font=("Arial", 9, "bold")
+        foreground="white",
+        font=("Segoe UI", 9, "bold"),
+        padding=8
     )
 
     estilo.map(
         "Treeview",
-        background=[("selected", MORADO_CLARO)],
-        foreground=[("selected", BLANCO)]
+        background=[("selected", MORADO)],
+        foreground=[("selected", "white")]
     )
 
-    barra = tk.Frame(menu, bg=MORADO_OSCURO)
-    barra.pack(fill="x")
+    estilo.configure(
+        "TCombobox",
+        fieldbackground="white",
+        background="white",
+        foreground="#111827",
+        padding=5
+    )
 
-    tk.Button(
-        barra,
-        text="About",
-        command=lambda: mostrar_about(menu),
-        bg=MORADO_OSCURO,
-        fg=MORADO_CLARO,
-        activebackground=MORADO,
-        activeforeground=BLANCO,
+    estilo.configure(
+        "TSpinbox",
+        padding=4
+    )
+
+
+def boton_padre(parent, texto, comando, color=MORADO, ancho=15):
+    return tk.Button(
+        parent,
+        text=texto,
+        command=comando,
+        bg=color,
+        fg="white",
+        activebackground=MORADO_CLARO,
+        activeforeground="white",
+        font=("Segoe UI", 10, "bold"),
         relief="flat",
-        font=("Arial", 10, "bold")
-    ).pack(side="left", padx=12, pady=8)
+        cursor="hand2",
+        width=ancho,
+        padx=8,
+        pady=8
+    )
+
+
+def mostrar_about(parent):
+    ventana_about = tk.Toplevel(parent)
+    ventana_about.title("Acerca de Compensándote")
+    ventana_about.geometry("420x330")
+    ventana_about.configure(bg=FONDO)
+    ventana_about.resizable(False, False)
+    ventana_about.transient(parent)
 
     tk.Label(
-        menu,
-        text="CAJA COMPENSÁNDOTE – CONTROL DE AFILIADOS",
-        font=("Arial", 20, "bold"),
-        bg=NEGRO,
-        fg=MORADO_CLARO
-    ).pack(pady=15)
-
-    formulario = tk.LabelFrame(
-        menu,
-        text="Datos del afiliado",
-        bg=NEGRO,
+        ventana_about,
+        text="COMPENSÁNDOTE",
+        font=("Segoe UI", 20, "bold"),
         fg=MORADO_CLARO,
-        font=("Arial", 11, "bold"),
-        padx=12,
-        pady=10
+        bg=FONDO
+    ).pack(pady=(25, 12))
+
+    informacion = (
+        "Proyecto académico\n"
+        "Curso: Estructuras de Datos - 301305\n\n"
+        "Estudiante: Andrea Redondo\n"
+        "Grupo: 301305A_2204\n\n"
+        "UNAD · ECBTI · Ingeniería de Sistemas\n"
+        "Octubre de 2026"
     )
-    formulario.pack(fill="x", padx=15, pady=5)
 
-    formulario.columnconfigure(1, weight=1)
-    formulario.columnconfigure(3, weight=1)
+    tk.Label(
+        ventana_about,
+        text=informacion,
+        font=("Segoe UI", 11),
+        fg=BLANCO,
+        bg=FONDO,
+        justify="center"
+    ).pack(pady=8)
 
-    def etiqueta(texto, fila, columna):
+    boton_padre(
+        ventana_about,
+        "Cerrar",
+        ventana_about.destroy,
+        color=MORADO
+    ).pack(pady=12)
+
+
+def abrir_menu():
+    ventana.withdraw()
+
+    app = tk.Toplevel(ventana)
+    app.title("Compensándote | Gestión de afiliados")
+    app.geometry("1450x850")
+    app.minsize(1150, 700)
+    app.configure(bg=FONDO)
+
+    configurar_estilos()
+
+    # ---------------- Variables del formulario ----------------
+
+    tipo_id_var = tk.StringVar(value="CC")
+    numero_id_var = tk.StringVar()
+    nombre_var = tk.StringVar()
+    ingresos_var = tk.StringVar()
+    servicio_var = tk.StringVar(
+        value="Subsidio de desempleo"
+    )
+    modalidad_var = tk.StringVar(value="Empleado")
+    tarifa_var = tk.StringVar(value="$0")
+    estructura_var = tk.StringVar(value="Pila")
+    reporte_var = tk.StringVar(value="Sin consultar")
+
+    dia_var = tk.StringVar()
+    mes_var = tk.StringVar()
+    anio_var = tk.StringVar()
+
+    # Control para evitar ciclos al sincronizar fechas
+    sincronizando_fecha = {"activo": False}
+
+
+    encabezado = tk.Frame(app, bg=FONDO)
+    encabezado.pack(fill="x", padx=25, pady=(18, 10))
+
+    tk.Label(
+        encabezado,
+        text="COMPENSÁNDOTE",
+        font=("Segoe UI", 24, "bold"),
+        fg=MORADO_CLARO,
+        bg=FONDO
+    ).pack(side="left")
+
+    tk.Label(
+        encabezado,
+        text="Sistema de gestión de afiliados",
+        font=("Segoe UI", 12),
+        fg=GRIS,
+        bg=FONDO
+    ).pack(side="left", padx=18, pady=(8, 0))
+
+    boton_padre(
+        encabezado,
+        "Acerca de",
+        lambda: mostrar_about(app),
+        color="#374151",
+        ancho=12
+    ).pack(side="right")
+
+
+    panel = tk.Frame(app, bg=PANEL)
+    panel.pack(fill="x", padx=25, pady=8)
+
+    tk.Label(
+        panel,
+        text="Registro de afiliados",
+        font=("Segoe UI", 15, "bold"),
+        fg=BLANCO,
+        bg=PANEL
+    ).grid(
+        row=0, column=0, columnspan=6,
+        sticky="w", padx=18, pady=(15, 12)
+    )
+
+    def crear_etiqueta(texto, fila, columna):
         tk.Label(
-            formulario,
+            panel,
             text=texto,
-            bg=NEGRO,
-            fg=BLANCO,
-            font=("Arial", 9)
+            font=("Segoe UI", 10, "bold"),
+            fg=GRIS,
+            bg=PANEL
         ).grid(
             row=fila,
             column=columna,
             sticky="w",
-            padx=6,
+            padx=12,
             pady=5
         )
 
-    def entrada_texto(fila, columna, ancho=24):
-        campo = tk.Entry(
-            formulario,
+    def crear_entrada(variable, fila, columna, ancho=24):
+        entrada = tk.Entry(
+            panel,
+            textvariable=variable,
             width=ancho,
-            bg=MORADO_OSCURO,
-            fg=BLANCO,
-            insertbackground=BLANCO,
-            relief="flat"
+            font=("Segoe UI", 10),
+            relief="flat",
+            bg="#FFFFFF",
+            fg="#111827",
+            insertbackground="#111827"
         )
-        campo.grid(
+        entrada.grid(
             row=fila,
             column=columna,
             sticky="ew",
-            padx=6,
-            pady=5
+            padx=12,
+            pady=5,
+            ipady=5
         )
-        return campo
+        return entrada
 
-    etiqueta("Tipo de identificación:", 0, 0)
+    crear_etiqueta("Tipo de identificación", 1, 0)
 
-    tipo_id = ttk.Combobox(
-        formulario,
+    combo_tipo = ttk.Combobox(
+        panel,
+        textvariable=tipo_id_var,
         values=["CC", "CE", "NUIP", "PAS"],
         state="readonly",
         width=21
     )
-    tipo_id.grid(row=0, column=1, sticky="ew", padx=6, pady=5)
-
-    etiqueta("Número de identificación:", 0, 2)
-    numero_id = entrada_texto(0, 3)
-
-    etiqueta("Nombre completo:", 1, 0)
-    nombre = entrada_texto(1, 1)
-
-    etiqueta("Ingresos actuales ($):", 1, 2)
-    ingresos = entrada_texto(1, 3)
-
-    etiqueta("Servicio deseado:", 2, 0)
-
-    servicios = [
-        "Subsidio de desempleo",
-        "Ingreso a parque",
-        "Curso de formación",
-        "Paquete de viaje",
-        "Medicina preventiva"
-    ]
-
-    servicio = ttk.Combobox(
-        formulario,
-        values=servicios,
-        state="readonly",
-        width=21
+    combo_tipo.grid(
+        row=1, column=1, sticky="ew",
+        padx=12, pady=5
     )
-    servicio.grid(row=2, column=1, sticky="ew", padx=6, pady=5)
 
-    etiqueta("Modalidad de empleo:", 2, 2)
+    crear_etiqueta("Número de identificación", 1, 2)
+    entrada_id = crear_entrada(
+        numero_id_var, 1, 3, ancho=25
+    )
 
-    modalidad = tk.StringVar(value="Empleado")
+    crear_etiqueta("Nombre completo", 2, 0)
+    entrada_nombre = crear_entrada(
+        nombre_var, 2, 1, ancho=25
+    )
 
-    marco_radio = tk.Frame(formulario, bg=NEGRO)
-    marco_radio.grid(row=2, column=3, sticky="w", padx=6)
+    crear_etiqueta("Ingresos mensuales ($)", 2, 2)
+    entrada_ingresos = crear_entrada(
+        ingresos_var, 2, 3, ancho=25
+    )
+
+    crear_etiqueta("Servicio", 3, 0)
+
+    combo_servicio = ttk.Combobox(
+        panel,
+        textvariable=servicio_var,
+        values=[
+            "Subsidio de desempleo",
+            "Ingreso a parque",
+            "Curso de formación",
+            "Paquete de viaje",
+            "Medicina preventiva"
+        ],
+        state="readonly",
+        width=27
+    )
+    combo_servicio.grid(
+        row=3, column=1, sticky="ew",
+        padx=12, pady=5
+    )
+
+    crear_etiqueta("Modalidad laboral", 3, 2)
+
+    marco_modalidad = tk.Frame(panel, bg=PANEL)
+    marco_modalidad.grid(
+        row=3, column=3, sticky="w",
+        padx=12, pady=5
+    )
 
     tk.Radiobutton(
-        marco_radio,
+        marco_modalidad,
         text="Empleado",
-        variable=modalidad,
+        variable=modalidad_var,
         value="Empleado",
-        bg=NEGRO,
+        bg=PANEL,
         fg=BLANCO,
-        selectcolor=MORADO_OSCURO,
-        activebackground=NEGRO,
-        activeforeground=MORADO_CLARO
-    ).pack(side="left")
+        selectcolor=FONDO,
+        activebackground=PANEL,
+        activeforeground=BLANCO,
+        font=("Segoe UI", 10)
+    ).pack(side="left", padx=(0, 12))
 
     tk.Radiobutton(
-        marco_radio,
+        marco_modalidad,
         text="Independiente",
-        variable=modalidad,
+        variable=modalidad_var,
         value="Independiente",
-        bg=NEGRO,
+        bg=PANEL,
         fg=BLANCO,
-        selectcolor=MORADO_OSCURO,
-        activebackground=NEGRO,
-        activeforeground=MORADO_CLARO
+        selectcolor=FONDO,
+        activebackground=PANEL,
+        activeforeground=BLANCO,
+        font=("Segoe UI", 10)
     ).pack(side="left")
 
-    etiqueta("Tarifa de afiliación:", 3, 0)
+    crear_etiqueta("Fecha de registro", 4, 0)
 
-    tarifa_var = tk.StringVar()
-
-    campo_tarifa = tk.Entry(
-        formulario,
-        textvariable=tarifa_var,
-        state="readonly",
-        readonlybackground=MORADO_OSCURO,
-        fg=MORADO_CLARO,
-        relief="flat"
+    marco_fecha = tk.Frame(panel, bg=PANEL)
+    marco_fecha.grid(
+        row=4, column=1, sticky="w",
+        padx=12, pady=5
     )
-    campo_tarifa.grid(
-        row=3, column=1, sticky="ew", padx=6, pady=5
-    )
-
-    etiqueta("Fecha de afiliación:", 3, 2)
-
-    marco_fecha = tk.Frame(formulario, bg=NEGRO)
-    marco_fecha.grid(row=3, column=3, sticky="w", padx=6)
 
     hoy = date.today()
+    dia_var.set(str(hoy.day))
+    mes_var.set(str(hoy.month))
+    anio_var.set(str(hoy.year))
 
-    dia_var = tk.StringVar(value=f"{hoy.day:02d}")
-    mes_var = tk.StringVar(value=f"{hoy.month:02d}")
-    anio_var = tk.StringVar(value=str(hoy.year))
+    # Selector de fecha
+    selector_fecha = DateEntry(
+        marco_fecha,
+        date_pattern="dd/mm/yyyy",
+        width=12,
+        background=MORADO,
+        foreground="white",
+        borderwidth=2,
+        maxdate=hoy
+    )
+    selector_fecha.set_date(hoy)
+    selector_fecha.pack(side="left", padx=(0, 10))
 
-    tk.Spinbox(
-        marco_fecha, from_=1, to=31, width=3,
-        textvariable=dia_var, format="%02.0f",
-        bg=MORADO_OSCURO, fg=BLANCO,
-        buttonbackground=MORADO
-    ).pack(side="left")
+    # Spinboxes solicitados
+    spin_dia = tk.Spinbox(
+        marco_fecha,
+        from_=1, to=31,
+        textvariable=dia_var,
+        width=3,
+        state="readonly"
+    )
+    spin_dia.pack(side="left", padx=2)
 
-    tk.Label(
-        marco_fecha, text="/",
-        bg=NEGRO, fg=BLANCO
-    ).pack(side="left")
+    spin_mes = tk.Spinbox(
+        marco_fecha,
+        from_=1, to=12,
+        textvariable=mes_var,
+        width=3,
+        state="readonly"
+    )
+    spin_mes.pack(side="left", padx=2)
 
-    tk.Spinbox(
-        marco_fecha, from_=1, to=12, width=3,
-        textvariable=mes_var, format="%02.0f",
-        bg=MORADO_OSCURO, fg=BLANCO,
-        buttonbackground=MORADO
-    ).pack(side="left")
-
-    tk.Label(
-        marco_fecha, text="/",
-        bg=NEGRO, fg=BLANCO
-    ).pack(side="left")
-
-    tk.Spinbox(
-        marco_fecha, from_=1900, to=2100, width=5,
+    spin_anio = tk.Spinbox(
+        marco_fecha,
+        from_=1900, to=hoy.year,
         textvariable=anio_var,
-        bg=MORADO_OSCURO, fg=BLANCO,
-        buttonbackground=MORADO
-    ).pack(side="left")
-
-    def validar_numero(nuevo):
-        return nuevo.isdigit() or nuevo == ""
-
-    def validar_nombre(nuevo):
-        return (
-            all(caracter.isalpha() or caracter.isspace()
-                for caracter in nuevo)
-            or nuevo == ""
-        )
-
-    validar_num = (
-        menu.register(validar_numero), "%P"
+        width=5,
+        state="readonly"
     )
-    validar_nom = (
-        menu.register(validar_nombre), "%P"
+    spin_anio.pack(side="left", padx=2)
+
+    # Tarifa calculada
+    crear_etiqueta("Tarifa calculada", 4, 2)
+
+    tk.Label(
+        panel,
+        textvariable=tarifa_var,
+        font=("Segoe UI", 12, "bold"),
+        fg=VERDE,
+        bg=PANEL
+    ).grid(
+        row=4, column=3, sticky="w",
+        padx=12, pady=5
     )
 
-    numero_id.configure(validate="key", validatecommand=validar_num)
-    ingresos.configure(validate="key", validatecommand=validar_num)
-    nombre.configure(validate="key", validatecommand=validar_nom)
+    crear_etiqueta("Estructura de datos", 5, 0)
 
-
-    def calcular_tarifa(*args):
-        tarifa_var.set("")
-
-        texto_ingresos = ingresos.get()
-
-        if not texto_ingresos.isdigit():
-            return
-
-        valor = int(texto_ingresos)
-
-        if valor < 1_000_000:
-            return
-
-        if modalidad.get() == "Empleado":
-            tarifas = [45000, 60000, 75000, 90000, 150000]
-        else:
-            tarifas = [10000, 20000, 30000, 40000, 80000]
-
-        if valor <= 2_000_000:
-            base = tarifas[0]
-        elif valor <= 3_000_000:
-            base = tarifas[1]
-        elif valor <= 4_000_000:
-            base = tarifas[2]
-        elif valor <= 5_000_000:
-            base = tarifas[3]
-        else:
-            base = tarifas[4]
-
-        servicio_elegido = servicio.get()
-
-        if servicio_elegido == "Ingreso a parque":
-            base += 2500
-
-        elif servicio_elegido == "Curso de formación":
-            base += 7500
-
-        elif servicio_elegido == "Paquete de viaje":
-            base += 10000
-
-        elif servicio_elegido == "Medicina preventiva":
-            base += valor * 0.10
-
-        tarifa_var.set(f"${base:,.0f}")
-
-    ingresos.bind("<KeyRelease>", calcular_tarifa)
-    servicio.bind("<<ComboboxSelected>>", calcular_tarifa)
-
-
-    etiqueta("Ver estructura:", 4, 0)
-
-    estructura = ttk.Combobox(
-        formulario,
+    combo_estructura = ttk.Combobox(
+        panel,
+        textvariable=estructura_var,
         values=["Pila", "Cola", "Lista"],
         state="readonly",
         width=21
     )
-    estructura.grid(row=4, column=1, sticky="ew", padx=6, pady=5)
-    estructura.set("Pila")
+    combo_estructura.grid(
+        row=5, column=1, sticky="ew",
+        padx=12, pady=5
+    )
 
-    etiqueta("Reporte:", 4, 2)
+    crear_etiqueta("Reporte", 5, 2)
 
-    reporte_var = tk.StringVar(value="Sin registros")
-
-    campo_reporte = tk.Entry(
-        formulario,
+    tk.Label(
+        panel,
         textvariable=reporte_var,
-        state="readonly",
-        readonlybackground=MORADO_OSCURO,
+        font=("Segoe UI", 10, "bold"),
         fg=MORADO_CLARO,
-        relief="flat"
-    )
-    campo_reporte.grid(
-        row=4, column=3, sticky="ew", padx=6, pady=5
+        bg=PANEL,
+        anchor="w"
+    ).grid(
+        row=5, column=3, sticky="ew",
+        padx=12, pady=5
     )
 
+    for columna in (1, 3):
+        panel.grid_columnconfigure(columna, weight=1)
 
-    marco_tabla = tk.Frame(menu, bg=NEGRO)
-    marco_tabla.pack(fill="both", expand=True, padx=15, pady=10)
+
+    def actualizar_spinboxes_desde_selector(event=None):
+        if sincronizando_fecha["activo"]:
+            return
+
+        sincronizando_fecha["activo"] = True
+        try:
+            fecha = selector_fecha.get_date()
+            dia_var.set(str(fecha.day))
+            mes_var.set(str(fecha.month))
+            anio_var.set(str(fecha.year))
+        finally:
+            sincronizando_fecha["activo"] = False
+
+    def actualizar_selector_desde_spinboxes(*args):
+        if sincronizando_fecha["activo"]:
+            return
+
+        try:
+            dia = int(dia_var.get())
+            mes = int(mes_var.get())
+            anio = int(anio_var.get())
+
+            fecha = date(anio, mes, dia)
+
+            if fecha > hoy:
+                return
+
+            sincronizando_fecha["activo"] = True
+            selector_fecha.set_date(fecha)
+
+        except (ValueError, tk.TclError):
+            return
+        finally:
+            sincronizando_fecha["activo"] = False
+
+    selector_fecha.bind(
+        "<<DateEntrySelected>>",
+        actualizar_spinboxes_desde_selector
+    )
+
+    dia_var.trace_add("write", actualizar_selector_desde_spinboxes)
+    mes_var.trace_add("write", actualizar_selector_desde_spinboxes)
+    anio_var.trace_add("write", actualizar_selector_desde_spinboxes)
+
+    def calcular_tarifa(mostrar_error=False):
+        texto_ingresos = ingresos_var.get().strip()
+
+        if not texto_ingresos:
+            tarifa_var.set("$0")
+            return 0
+
+        try:
+            ingresos = float(texto_ingresos)
+
+            if ingresos < 0:
+                raise ValueError
+
+        except ValueError:
+            tarifa_var.set("$0")
+
+            if mostrar_error:
+                messagebox.showerror(
+                    "Ingresos inválidos",
+                    "Ingresa un valor numérico válido y no negativo.",
+                    parent=app
+                )
+
+            return None
+
+        modalidad = modalidad_var.get()
+
+        if 1_000_000 <= ingresos < 2_000_000:
+            tarifa = 45000 if modalidad == "Empleado" else 10000
+        elif 2_000_000 <= ingresos < 3_000_000:
+            tarifa = 60000 if modalidad == "Empleado" else 20000
+        elif 3_000_000 <= ingresos < 4_000_000:
+            tarifa = 75000 if modalidad == "Empleado" else 30000
+        elif 4_000_000 <= ingresos <= 5_000_000:
+            tarifa = 90000 if modalidad == "Empleado" else 40000
+        elif ingresos > 5_000_000:
+            tarifa = 150000 if modalidad == "Empleado" else 80000
+        else:
+            tarifa = 0
+
+        servicio = servicio_var.get()
+
+        if servicio == "Ingreso a parque":
+            tarifa += 2500
+        elif servicio == "Curso de formación":
+            tarifa += 7500
+        elif servicio == "Paquete de viaje":
+            tarifa += 10000
+        elif servicio == "Medicina preventiva":
+            tarifa += ingresos * 0.10
+
+        tarifa = round(tarifa)
+        tarifa_var.set(f"${tarifa:,.0f}")
+        return tarifa
+
+    def recalcular_tarifa(*args):
+        calcular_tarifa()
+
+    ingresos_var.trace_add("write", recalcular_tarifa)
+    modalidad_var.trace_add("write", recalcular_tarifa)
+    servicio_var.trace_add("write", recalcular_tarifa)
+
+    def obtener_estructura():
+        seleccion = estructura_var.get()
+
+        if seleccion == "Pila":
+            return pila
+        elif seleccion == "Cola":
+            return cola
+        return lista_afiliados
+
+    def obtener_nombre_estructura():
+        return estructura_var.get()
+
+    panel_tabla = tk.Frame(app, bg=PANEL)
+    panel_tabla.pack(
+        fill="both", expand=True,
+        padx=25, pady=(8, 10)
+    )
+
+    tk.Label(
+        panel_tabla,
+        text="Afiliados registrados",
+        font=("Segoe UI", 14, "bold"),
+        fg=BLANCO,
+        bg=PANEL
+    ).pack(anchor="w", padx=15, pady=12)
 
     columnas = (
-        "tipo", "identificacion", "nombre", "ingresos",
-        "servicio", "modalidad", "tarifa", "fecha"
+        "tipo_id",
+        "numero_id",
+        "nombre",
+        "ingresos",
+        "servicio",
+        "modalidad",
+        "tarifa",
+        "fecha"
+    )
+
+    contenedor_tabla = tk.Frame(panel_tabla, bg=PANEL)
+    contenedor_tabla.pack(
+        fill="both", expand=True,
+        padx=12, pady=(0, 12)
     )
 
     tabla = ttk.Treeview(
-        marco_tabla,
+        contenedor_tabla,
         columns=columnas,
         show="headings",
-        height=9
+        selectmode="browse"
     )
 
     encabezados = {
-        "tipo": "Tipo ID",
-        "identificacion": "Identificación",
+        "tipo_id": "Tipo ID",
+        "numero_id": "Identificación",
         "nombre": "Nombre completo",
         "ingresos": "Ingresos",
         "servicio": "Servicio",
@@ -459,14 +625,14 @@ def abrir_menu():
     }
 
     anchos = {
-        "tipo": 65,
-        "identificacion": 105,
-        "nombre": 150,
-        "ingresos": 100,
-        "servicio": 170,
-        "modalidad": 105,
-        "tarifa": 90,
-        "fecha": 95
+        "tipo_id": 75,
+        "numero_id": 120,
+        "nombre": 180,
+        "ingresos": 115,
+        "servicio": 205,
+        "modalidad": 115,
+        "tarifa": 115,
+        "fecha": 105
     }
 
     for columna in columnas:
@@ -474,334 +640,543 @@ def abrir_menu():
         tabla.column(
             columna,
             width=anchos[columna],
-            minwidth=60,
+            minwidth=70,
             anchor="center"
         )
 
-    scroll_y = ttk.Scrollbar(
-        marco_tabla, orient="vertical", command=tabla.yview
+    scrollbar_y = ttk.Scrollbar(
+        contenedor_tabla,
+        orient="vertical",
+        command=tabla.yview
     )
-    tabla.configure(yscrollcommand=scroll_y.set)
 
-    tabla.pack(side="left", fill="both", expand=True)
-    scroll_y.pack(side="right", fill="y")
+    scrollbar_x = ttk.Scrollbar(
+        contenedor_tabla,
+        orient="horizontal",
+        command=tabla.xview
+    )
 
+    tabla.configure(
+        yscrollcommand=scrollbar_y.set,
+        xscrollcommand=scrollbar_x.set
+    )
 
-    def obtener_estructura():
-        if estructura.get() == "Pila":
-            return pila
-        elif estructura.get() == "Cola":
-            return cola
-        return lista_afiliados
+    tabla.grid(row=0, column=0, sticky="nsew")
+    scrollbar_y.grid(row=0, column=1, sticky="ns")
+    scrollbar_x.grid(row=1, column=0, sticky="ew")
 
-    def actualizar_tabla(*args):
-        tabla.delete(*tabla.get_children())
+    contenedor_tabla.grid_rowconfigure(0, weight=1)
+    contenedor_tabla.grid_columnconfigure(0, weight=1)
 
-        for afiliado in obtener_estructura():
-            tabla.insert("", "end", values=afiliado.obtener_datos())
+    def actualizar_tabla():
+        for elemento in tabla.get_children():
+            tabla.delete(elemento)
 
-        actualizar_reporte()
-
-    def actualizar_reporte():
-        registros = obtener_estructura()
-
-        if estructura.get() == "Pila":
-            total = sum(a.tarifa for a in registros)
-            reporte_var.set(f"Suma de tarifas: ${total:,.0f}")
-
-        elif estructura.get() == "Cola":
-            reporte_var.set(f"Cantidad de registros: {len(registros)}")
-
-        else:
-            if registros:
-                promedio = sum(a.ingresos for a in registros) / len(registros)
-                reporte_var.set(f"Promedio de ingresos: ${promedio:,.0f}")
-            else:
-                reporte_var.set("Promedio de ingresos: $0")
-
-    estructura.bind("<<ComboboxSelected>>", actualizar_tabla)
-
-
-    def registrar():
-        tipo = tipo_id.get()
-        identificacion = numero_id.get().strip()
-        nombre_completo = nombre.get().strip()
-        texto_ingresos = ingresos.get().strip()
-        servicio_elegido = servicio.get()
-        modalidad_elegida = modalidad.get()
-
-        if not all([
-            tipo, identificacion, nombre_completo,
-            texto_ingresos, servicio_elegido
-        ]):
-            messagebox.showwarning(
-                "Campos requeridos",
-                "Diligencia todos los campos antes de registrar.",
-                parent=menu
+        for indice, afiliado in enumerate(obtener_estructura()):
+            tabla.insert(
+                "",
+                "end",
+                iid=str(indice),
+                values=afiliado.obtener_datos()
             )
-            return
 
-        valor_ingresos = int(texto_ingresos)
+    def validar_formulario():
+        tipo_id = tipo_id_var.get().strip()
+        numero_id = numero_id_var.get().strip()
+        nombre = nombre_var.get().strip()
+        texto_ingresos = ingresos_var.get().strip()
+        servicio = servicio_var.get().strip()
+        modalidad = modalidad_var.get().strip()
 
-        if valor_ingresos < 1_000_000:
+        if not tipo_id:
             messagebox.showwarning(
-                "Ingresos inválidos",
-                "Los ingresos deben ser de al menos $1.000.000.",
-                parent=menu
+                "Campo requerido",
+                "Selecciona el tipo de identificación.",
+                parent=app
             )
-            return
+            return None
+
+        if not numero_id or not numero_id.isdigit():
+            messagebox.showwarning(
+                "Identificación inválida",
+                "El número de identificación debe contener solo dígitos.",
+                parent=app
+            )
+            entrada_id.focus_set()
+            return None
+
+        if not nombre:
+            messagebox.showwarning(
+                "Campo requerido",
+                "Ingresa el nombre completo.",
+                parent=app
+            )
+            entrada_nombre.focus_set()
+            return None
+
+        if not all(
+            caracter.isalpha() or caracter.isspace()
+            for caracter in nombre
+        ):
+            messagebox.showwarning(
+                "Nombre inválido",
+                "El nombre debe contener solamente letras y espacios.",
+                parent=app
+            )
+            entrada_nombre.focus_set()
+            return None
+
+        if not texto_ingresos:
+            messagebox.showwarning(
+                "Campo requerido",
+                "Ingresa los ingresos mensuales.",
+                parent=app
+            )
+            entrada_ingresos.focus_set()
+            return None
 
         try:
-            fecha = date(
-                int(anio_var.get()),
-                int(mes_var.get()),
-                int(dia_var.get())
-            )
+            ingresos = float(texto_ingresos)
+
+            if ingresos < 0:
+                raise ValueError
+
         except ValueError:
-            messagebox.showerror(
+            messagebox.showwarning(
+                "Ingresos inválidos",
+                "Los ingresos deben ser un número igual o mayor que cero.",
+                parent=app
+            )
+            entrada_ingresos.focus_set()
+            return None
+
+        if not servicio or not modalidad:
+            messagebox.showwarning(
+                "Campo requerido",
+                "Selecciona el servicio y la modalidad laboral.",
+                parent=app
+            )
+            return None
+
+        try:
+            fecha = selector_fecha.get_date()
+
+            if fecha > hoy:
+                messagebox.showwarning(
+                    "Fecha inválida",
+                    "La fecha no puede ser posterior a hoy.",
+                    parent=app
+                )
+                return None
+
+        except (ValueError, tk.TclError):
+            messagebox.showwarning(
                 "Fecha inválida",
                 "Selecciona una fecha válida.",
-                parent=menu
+                parent=app
             )
+            return None
+
+        return {
+            "tipo_id": tipo_id,
+            "numero_id": numero_id,
+            "nombre": nombre,
+            "ingresos": ingresos,
+            "servicio": servicio,
+            "modalidad": modalidad,
+            "fecha": fecha.strftime("%d/%m/%Y")
+        }
+
+    def registrar():
+        datos = validar_formulario()
+
+        if datos is None:
             return
 
-        calcular_tarifa()
+        todos = list(pila) + list(cola) + list(lista_afiliados)
 
-        if not tarifa_var.get():
-            messagebox.showwarning(
-                "Tarifa pendiente",
-                "No fue posible calcular la tarifa.",
-                parent=menu
-            )
-            return
-
-        valor_tarifa = float(
-            tarifa_var.get().replace("$", "").replace(",", "")
+        duplicado = any(
+            afiliado.tipo_id == datos["tipo_id"]
+            and afiliado.numero_id == datos["numero_id"]
+            for afiliado in todos
         )
+
+        if duplicado:
+            messagebox.showwarning(
+                "Registro duplicado",
+                "Ya existe un afiliado con ese tipo y número de identificación.",
+                parent=app
+            )
+            return
+
+        tarifa = calcular_tarifa(mostrar_error=True)
+
+        if tarifa is None:
+            return
 
         afiliado = EstructuraDatosAfiliado(
-            tipo,
-            identificacion,
-            nombre_completo,
-            valor_ingresos,
-            servicio_elegido,
-            modalidad_elegida,
-            valor_tarifa,
-            fecha.strftime("%d/%m/%Y")
+            tipo_id=datos["tipo_id"],
+            numero_id=datos["numero_id"],
+            nombre=datos["nombre"],
+            ingresos=datos["ingresos"],
+            servicio=datos["servicio"],
+            modalidad=datos["modalidad"],
+            tarifa=tarifa,
+            fecha=datos["fecha"]
         )
 
-        registros = obtener_estructura()
-        registros.append(afiliado)
+        estructura = obtener_estructura()
+
+        estructura.append(afiliado)
 
         actualizar_tabla()
-        limpiar_campos()
+        actualizar_reporte()
 
         messagebox.showinfo(
             "Registro exitoso",
-            "El afiliado fue registrado correctamente.",
-            parent=menu
+            f"El afiliado se registró correctamente en {estructura_var.get()}.",
+            parent=app
         )
 
-    def limpiar_campos():
-        tipo_id.set("")
-        numero_id.delete(0, tk.END)
-        nombre.delete(0, tk.END)
-        ingresos.delete(0, tk.END)
-        servicio.set("")
-        modalidad.set("Empleado")
-        tarifa_var.set("")
+        limpiar_campos(mostrar_mensaje=False)
 
-        hoy = date.today()
-        dia_var.set(f"{hoy.day:02d}")
-        mes_var.set(f"{hoy.month:02d}")
-        anio_var.set(str(hoy.year))
+    def limpiar_campos(mostrar_mensaje=True):
+        tipo_id_var.set("CC")
+        numero_id_var.set("")
+        nombre_var.set("")
+        ingresos_var.set("")
+        servicio_var.set("Subsidio de desempleo")
+        modalidad_var.set("Empleado")
+        tarifa_var.set("$0")
+
+        fecha_actual = date.today()
+        selector_fecha.set_date(fecha_actual)
+
+        dia_var.set(str(fecha_actual.day))
+        mes_var.set(str(fecha_actual.month))
+        anio_var.set(str(fecha_actual.year))
+
+        estructura_var.set("Pila")
+        reporte_var.set("Sin consultar")
+
+        tabla.selection_remove(tabla.selection())
+        actualizar_tabla()
+
+        if mostrar_mensaje:
+            messagebox.showinfo(
+                "Formulario limpio",
+                "Se limpiaron los campos. Los registros guardados no se eliminaron.",
+                parent=app
+            )
+
+    def actualizar_reporte():
+        registros = obtener_estructura()
+        cantidad = len(registros)
+
+        if cantidad == 0:
+            reporte_var.set("Sin registros")
+            return
+
+        if estructura_var.get() == "Pila":
+            total = sum(afiliado.tarifa for afiliado in registros)
+            reporte_var.set(
+                f"Total tarifas: ${total:,.0f}"
+            )
+
+        elif estructura_var.get() == "Cola":
+            reporte_var.set(
+                f"Afiliados registrados: {cantidad}"
+            )
+
+        else:
+            promedio = (
+                sum(afiliado.ingresos for afiliado in registros)
+                / cantidad
+            )
+            reporte_var.set(
+                f"Promedio ingresos: ${promedio:,.0f}"
+            )
 
     def mostrar_reporte():
-        actualizar_reporte()
-        messagebox.showinfo(
-            "Reporte - " + estructura.get(),
-            reporte_var.get(),
-            parent=menu
-        )
-
-
-    def eliminar():
         registros = obtener_estructura()
+        cantidad = len(registros)
+        nombre_estructura = obtener_nombre_estructura()
 
-        if not registros:
-            messagebox.showwarning(
-                "Sin registros",
-                "No hay afiliados para eliminar en esta estructura.",
-                parent=menu
+        if cantidad == 0:
+            reporte_var.set("Sin registros")
+            messagebox.showinfo(
+                "Reporte",
+                f"No hay afiliados registrados en la {nombre_estructura.lower()}.",
+                parent=app
             )
             return
 
-        if estructura.get() == "Pila":
-            afiliado = registros[-1]
-            mensaje = (
-                f"¿Deseas desapilar al último afiliado?\n"
-                f"{afiliado.nombre} - {afiliado.numero_id}"
+        if nombre_estructura == "Pila":
+            total = sum(afiliado.tarifa for afiliado in registros)
+
+            detalle = (
+                f"Estructura: Pila\n"
+                f"Cantidad de afiliados: {cantidad}\n"
+                f"Suma total de tarifas: ${total:,.0f}"
             )
 
-            if messagebox.askyesno("Confirmar", mensaje, parent=menu):
-                registros.pop()
-
-        elif estructura.get() == "Cola":
-            afiliado = registros[0]
-            mensaje = (
-                f"¿Deseas desencolar al primer afiliado?\n"
-                f"{afiliado.nombre} - {afiliado.numero_id}"
+        elif nombre_estructura == "Cola":
+            detalle = (
+                f"Estructura: Cola\n"
+                f"Cantidad de afiliados: {cantidad}"
             )
-
-            if messagebox.askyesno("Confirmar", mensaje, parent=menu):
-                registros.pop(0)
 
         else:
-            identificacion = tk.simpledialog.askstring(
-                "Eliminar afiliado",
-                "Escribe el número de identificación:",
-                parent=menu
+            promedio = (
+                sum(afiliado.ingresos for afiliado in registros)
+                / cantidad
+            )
+
+            detalle = (
+                f"Estructura: Lista\n"
+                f"Cantidad de afiliados: {cantidad}\n"
+                f"Promedio de ingresos: ${promedio:,.0f}"
+            )
+
+        reporte_var.set(detalle.replace("\n", " | "))
+
+        messagebox.showinfo(
+            f"Reporte de {nombre_estructura}",
+            detalle,
+            parent=app
+        )
+
+    def eliminar():
+        estructura = obtener_estructura()
+        nombre_estructura = obtener_nombre_estructura()
+
+        if not estructura:
+            messagebox.showinfo(
+                "Sin registros",
+                f"No hay afiliados en la {nombre_estructura.lower()} para eliminar.",
+                parent=app
+            )
+            return
+
+        if nombre_estructura == "Pila":
+            afiliado = estructura[-1]
+
+            confirmar = messagebox.askyesno(
+                "Confirmar eliminación",
+                f"¿Deseas retirar el último afiliado de la pila?\n\n"
+                f"{afiliado.nombre} - {afiliado.numero_id}",
+                parent=app
+            )
+
+            if confirmar:
+                estructura.pop()
+
+        elif nombre_estructura == "Cola":
+            afiliado = estructura[0]
+
+            confirmar = messagebox.askyesno(
+                "Confirmar eliminación",
+                f"¿Deseas retirar el primer afiliado de la cola?\n\n"
+                f"{afiliado.nombre} - {afiliado.numero_id}",
+                parent=app
+            )
+
+            if confirmar:
+                # deque permite eliminar el primer elemento con popleft()
+                estructura.popleft()
+
+        else:
+            identificacion = simpledialog.askstring(
+                "Eliminar de la lista",
+                "Escribe el número de identificación del afiliado:",
+                parent=app
             )
 
             if identificacion is None:
                 return
 
-            afiliado_encontrado = next(
+            identificacion = identificacion.strip()
+
+            if not identificacion:
+                messagebox.showwarning(
+                    "Dato requerido",
+                    "Debes ingresar una identificación.",
+                    parent=app
+                )
+                return
+
+            afiliado = next(
                 (
-                    a for a in registros
-                    if a.numero_id == identificacion.strip()
+                    elemento
+                    for elemento in estructura
+                    if elemento.numero_id == identificacion
                 ),
                 None
             )
 
-            if afiliado_encontrado is None:
-                messagebox.showerror(
+            if afiliado is None:
+                messagebox.showwarning(
                     "No encontrado",
-                    "No existe un afiliado con esa identificación.",
-                    parent=menu
+                    "No se encontró un afiliado con esa identificación en la lista.",
+                    parent=app
                 )
                 return
 
             confirmar = messagebox.askyesno(
                 "Confirmar eliminación",
-                f"¿Eliminar a {afiliado_encontrado.nombre}?",
-                parent=menu
+                f"¿Deseas eliminar este afiliado de la lista?\n\n"
+                f"{afiliado.nombre} - {afiliado.numero_id}",
+                parent=app
             )
 
             if confirmar:
-                registros.remove(afiliado_encontrado)
+                estructura.remove(afiliado)
 
         actualizar_tabla()
+        actualizar_reporte()
 
-    marco_botones = tk.Frame(menu, bg=NEGRO)
-    marco_botones.pack(pady=(0, 12))
+    def cambiar_estructura(event=None):
+        actualizar_tabla()
+        actualizar_reporte()
 
-    def boton_accion(texto, comando, color=MORADO):
-        return tk.Button(
-            marco_botones,
-            text=texto,
-            command=comando,
-            width=13,
-            font=("Arial", 10, "bold"),
-            bg=color,
-            fg=BLANCO,
-            activebackground=MORADO_CLARO,
-            activeforeground=BLANCO,
-            relief="flat",
-            cursor="hand2"
+    combo_estructura.bind(
+        "<<ComboboxSelected>>",
+        cambiar_estructura
+    )
+
+    panel_botones = tk.Frame(app, bg=FONDO)
+    panel_botones.pack(fill="x", padx=25, pady=(0, 18))
+
+    boton_padre(
+        panel_botones,
+        "Registrar",
+        registrar,
+        color=VERDE,
+        ancho=14
+    ).pack(side="left", padx=(0, 10))
+
+    boton_padre(
+        panel_botones,
+        "Limpiar",
+        limpiar_campos,
+        color="#475569",
+        ancho=14
+    ).pack(side="left", padx=10)
+
+    boton_padre(
+        panel_botones,
+        "Reporte",
+        mostrar_reporte,
+        color=MORADO,
+        ancho=14
+    ).pack(side="left", padx=10)
+
+    boton_padre(
+        panel_botones,
+        "Eliminar",
+        eliminar,
+        color=ROJO,
+        ancho=14
+    ).pack(side="left", padx=10)
+
+    def salir_aplicacion():
+        confirmar = messagebox.askyesno(
+            "Salir",
+            "¿Deseas cerrar Compensándote?",
+            parent=app
         )
 
-    boton_accion("Registrar", registrar).pack(side="left", padx=5)
-    boton_accion("Limpiar", limpiar_campos).pack(side="left", padx=5)
-    boton_accion("Reporte", mostrar_reporte).pack(side="left", padx=5)
-    boton_accion("Eliminar", eliminar).pack(side="left", padx=5)
-    boton_accion("Salir", ventana.destroy, ROJO).pack(side="left", padx=5)
+        if confirmar:
+            app.destroy()
+            ventana.destroy()
+
+    boton_padre(
+        panel_botones,
+        "Salir",
+        salir_aplicacion,
+        color="#374151",
+        ancho=14
+    ).pack(side="right")
 
     actualizar_tabla()
+    actualizar_reporte()
 
-tk.Label(
-    ventana,
-    text="◆",
-    font=("Arial", 35, "bold"),
-    bg=NEGRO,
-    fg=MORADO_CLARO
-).pack(pady=(20, 0))
+    def cerrar_menu():
+        app.destroy()
+        ventana.deiconify()
+
+    app.protocol("WM_DELETE_WINDOW", cerrar_menu)
 
 tk.Label(
     ventana,
     text="COMPENSÁNDOTE",
-    font=("Arial", 24, "bold"),
-    bg=NEGRO,
-    fg=MORADO_CLARO
-).pack(pady=5)
+    font=("Segoe UI", 23, "bold"),
+    fg=MORADO_CLARO,
+    bg=FONDO
+).pack(pady=(32, 8))
 
 tk.Label(
     ventana,
     text="Sistema de gestión de afiliados",
-    font=("Arial", 11),
-    bg=NEGRO,
-    fg=GRIS
-).pack(pady=(0, 25))
+    font=("Segoe UI", 11),
+    fg=GRIS,
+    bg=FONDO
+).pack(pady=(0, 22))
 
 tk.Label(
     ventana,
-    text="Ingrese la contraseña para continuar",
-    font=("Arial", 10),
-    bg=NEGRO,
-    fg=BLANCO
-).pack(pady=5)
+    text="Contraseña de acceso",
+    font=("Segoe UI", 11, "bold"),
+    fg=BLANCO,
+    bg=FONDO
+).pack(pady=(0, 8))
+
+contrasena_var = tk.StringVar()
 
 entrada_contrasena = tk.Entry(
     ventana,
+    textvariable=contrasena_var,
     show="*",
-    width=28,
-    font=("Arial", 12),
-    bg=MORADO_OSCURO,
-    fg=BLANCO,
-    insertbackground=BLANCO,
+    font=("Segoe UI", 12),
+    width=25,
     relief="flat",
+    bg="white",
+    fg="#111827",
     justify="center"
 )
-entrada_contrasena.pack(ipady=8, pady=10)
+entrada_contrasena.pack(ipady=8, pady=(0, 18))
 
 
-def iniciar_sesion():
-    if entrada_contrasena.get() == "Caja":
+def iniciar_sesion(event=None):
+    if contrasena_var.get() == "Caja":
+        contrasena_var.set("")
         abrir_menu()
     else:
         messagebox.showerror(
             "Acceso denegado",
-            "La contraseña es incorrecta.",
+            "La contraseña ingresada es incorrecta.",
             parent=ventana
         )
+        entrada_contrasena.focus_set()
 
 
-entrada_contrasena.bind(
-    "<Return>",
-    lambda evento: iniciar_sesion()
-)
-
-tk.Button(
+boton_padre(
     ventana,
-    text="INGRESAR",
-    command=iniciar_sesion,
-    font=("Arial", 11, "bold"),
-    bg=MORADO,
-    fg=BLANCO,
-    activebackground=MORADO_CLARO,
-    activeforeground=BLANCO,
-    relief="flat",
-    cursor="hand2",
-    width=23,
-    height=2
-).pack(pady=15)
+    "Ingresar",
+    iniciar_sesion,
+    color=MORADO,
+    ancho=20
+).pack(pady=4)
 
-tk.Label(
+boton_padre(
     ventana,
-    text="UNAD · ECBTI · Systems Engineering",
-    font=("Arial", 9),
-    bg=NEGRO,
-    fg="#76658D"
-).pack(side="bottom", pady=15)
+    "Acerca de",
+    lambda: mostrar_about(ventana),
+    color="#374151",
+    ancho=20
+).pack(pady=8)
+
+entrada_contrasena.bind("<Return>", iniciar_sesion)
+entrada_contrasena.focus_set()
 
 ventana.mainloop()
