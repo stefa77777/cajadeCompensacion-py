@@ -1,6 +1,6 @@
-        const stackData = []; // Pila
-        const queueData = []; // Cola
-        const listData = [];  // Lista
+        const stackData = []; 
+        const queueData = [];
+        const listData = [];
 
         document.getElementById('affiliationDate').valueAsDate = new Date();
 
