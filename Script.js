@@ -1,25 +1,9 @@
-const stackData = []; // Pila
+        const stackData = []; // Pila
         const queueData = []; // Cola
         const listData = [];  // Lista
 
-        // Initialize Default Date
         document.getElementById('affiliationDate').valueAsDate = new Date();
 
-        // LOGIN VALIDATION
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const pass = document.getElementById('loginPassword').value;
-            if (pass === "Caja") {
-                document.getElementById('loginScreen').classList.add('hidden');
-            } else {
-                alert("Error: Incorrect password! The password is 'Caja'");
-            }
-        });
-
-        function showAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
-        function closeAboutModal() { document.getElementById('aboutModal').classList.add('hidden'); }
-
-        // AFFILIATION FEE CALCULATION
         function calculateFee() {
             const income = parseFloat(document.getElementById('currentIncome').value) || 0;
             const mode = document.querySelector('input[name="empMode"]:checked').value;
@@ -50,7 +34,6 @@ const stackData = []; // Pila
             return fee;
         }
 
-        // REGISTER AFFILIATE
         document.getElementById('affiliationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const idNumber = document.getElementById('idNumber').value;
@@ -86,7 +69,6 @@ const stackData = []; // Pila
             alert("Affiliate successfully registered!");
         });
 
-        // RENDER TREEVIEW TABLE
         function renderTable() {
             const struct = document.getElementById('structChoice').value;
             document.getElementById('activeStructBadge').textContent = `Structure: ${struct}`;
@@ -120,7 +102,6 @@ const stackData = []; // Pila
             });
         }
 
-        // GENERATE REPORT (Req. 4)
         function generateReport() {
             const struct = document.getElementById('structChoice').value;
             const display = document.getElementById('reportDisplay');
@@ -140,7 +121,6 @@ const stackData = []; // Pila
             }
         }
 
-        // DELETE RECORD (Req. 9)
         function deleteRecord() {
             const struct = document.getElementById('structChoice').value;
 
@@ -172,8 +152,6 @@ const stackData = []; // Pila
                 }
             }
         }
-
-        // CLEAR FORM
         function clearForm() {
             document.getElementById('idNumber').value = '';
             document.getElementById('fullName').value = '';
